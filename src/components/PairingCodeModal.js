@@ -4,15 +4,21 @@ import ClipLoader from "react-spinners/ClipLoader";
 import ProgressBar from 'react-bootstrap/ProgressBar';
 import { useEffect, useState, useCallback } from 'react';
 
-export default function PairingCodeModal(props) {
+export default function PairingCodeModal({
+  show,
+  onHide,
+  code,
+  expiry_time,
+  get_new_code, 
+}) {
   const [currentTime, setCurrentTime] = useState(Date.now());
-  const [start_time, setStartTime] = useState(Date.now());
+  const [startTime, setStartTime] = useState(Date.now());
   const [codeGenerated, setCodeGenerated] = useState(false);
 
   useEffect(() => {
     let interval;
 
-    if (props.show) {
+    if (show) {
       setStartTime(Date.now());
       setCodeGenerated(false);
       interval = setInterval(() => {
@@ -22,37 +28,44 @@ export default function PairingCodeModal(props) {
       clearInterval(interval);
     }
     return () => clearInterval(interval);
-  }, [props.show]);
+  }, [show]);
 
   const calculateProgress = useCallback(() => {
-    const startTimeSec = start_time;
-    const expiryTime = props.expiry_time * 1000;
-    const now = currentTime;
+    const startTimeSec = startTime;
+    const expiryTime = expiry_time * 1000;
 
     const totalDuration = expiryTime - startTimeSec;
-    const elapsedTime = now - startTimeSec;
+    const elapsedTime = currentTime - startTimeSec;
 
     if (totalDuration <= 0) return 100;
 
     return Math.min(100, (elapsedTime / totalDuration) * 100);
-  }, [props.expiry_time, currentTime]);
+  }, [expiry_time, currentTime]);
 
   const calculateRemainingTime = useCallback(() => {
-    const expiryTime = props.expiry_time * 1000;
-    const now = currentTime;
+    const expiryTime = expiry_time * 1000;
 
-    const remainingTime = Math.max(0, Math.floor((expiryTime - now) / 1000));
+    const remainingTime = Math.max(0, Math.floor((expiryTime - currentTime) / 1000));
+
     if (remainingTime <= 0 && !codeGenerated) {
-      props.get_new_code();
+      get_new_code();
       setCodeGenerated(true);
       setStartTime(Date.now());
     }
     return remainingTime;
-  }, [props.expiry_time, currentTime, codeGenerated, props]);
+  }, [expiry_time, currentTime, codeGenerated, get_new_code, startTime]);
+
+  useEffect(() => {
+    if (codeGenerated) {
+      const resetTimer = setTimeout(() => setCodeGenerated(false), 1000);
+      return () => clearTimeout(resetTimer);
+    }
+  }, [codeGenerated]);
 
   return (
     <Modal
-      {...props}
+      show={show}
+      onHide={onHide}
       size="lg"
       aria-labelledby="contained-modal-title-vcenter"
       centered
@@ -70,9 +83,9 @@ export default function PairingCodeModal(props) {
           <ClipLoader color="#019dd7" loading size={150} />
         </div> 
       </Modal.Body>
-      <div className='flex justify-content-start ms-3 mb-1 me-3 '>
+      <div className='flex justify-content-start ms-3 mb-1 me-3'>
         <ProgressBar now={calculateProgress()} max={100} label={`${calculateRemainingTime()} s`} />
-        <h5 className='mt-3'>Wprowadź kod: {props.code}</h5>
+        <h5 className='mt-3'>Wprowadź kod: {code}</h5>
       </div>
     </Modal>
   );

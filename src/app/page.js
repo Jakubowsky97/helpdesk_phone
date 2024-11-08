@@ -3,11 +3,14 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import '@/components/css/button.css'
 import React from 'react';
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Button from 'react-bootstrap/Button';
 import PairingCodeModal from '../components/PairingCodeModal';
 import { getPairingCode, checkIfPaired, generateOAuthToken, getInfoAboutPhone } from '../api/apiServices';
 import LoginConsultant from '../components/LoginConsultant';
+import axios from 'axios';
+import { handleClearLocalStorage } from '@/components/ClearLocalStorage';
+import CallPage from '@/components/CallPage';
 
 const helpDesk = () => {
   const router = useRouter();
@@ -88,16 +91,38 @@ const helpDesk = () => {
     getInfoAboutPhone().then(function (response) {
       setUserId(response.data.user_id);
       localStorage.setItem('userId', response.data.user_id);
+      router.refresh();
     }).catch(function (error) {
       console.error(error);
     })
   }
 
+  useEffect(() => {
+    const accessToken = localStorage.getItem('accessToken');
+    if (accessToken) {
+      axios.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
+      
+      const fetchPhoneInfo = async () => {
+        try {
+          await handleInfoAboutPhone();
+          router.refresh();
+        } catch (error) {
+          console.error("Error fetching phone info:", error);
+        }
+      };
+
+      fetchPhoneInfo();
+    }
+  }, []);
+  
   return (
     <div>
       {localStorage.getItem('accessToken') || localStorage.getItem('clientId') ? (
-        // TODO: Sprawdźić czy userId ma wartość po pobraniu handleInfoAboutPhone() jezeli ma wyświetlić panel konsultanta jeżeli nie ma wyświeltić LoginConsultant
-        <LoginConsultant/>
+        userId == 0 ? (
+          <LoginConsultant/>
+        ) : (
+          <CallPage/>
+        )
       ) : (
         <div>
           <h1>Status: Rozłączony</h1>

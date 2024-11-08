@@ -24,4 +24,14 @@ export const generateOAuthToken = (clientId, clientSecret) => {
 
 export const getInfoAboutPhone = () => {
     return axios.get(base_url + '/api/v2/phone/me');
-}
+};
+
+export const LoginConsultantAPI = () => { 
+  return axios.post(base_url + '/api/v2/phone/user/login', {
+    "code": document.getElementById('loginCode').value
+  })
+};
+
+export const LogOutConsultantAPI = () => { 
+  return axios.post(base_url + '/api/v2/phone/user/logout');
+};
