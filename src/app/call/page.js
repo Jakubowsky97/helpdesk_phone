@@ -1,9 +1,19 @@
+"use client";
 import { Button } from "react-bootstrap";
-import { logOutConsultant } from "./ClearLocalStorage";
+import { logOutConsultant } from "@/components/ClearLocalStorage";
+import { UpdateStatusAPI } from "@/api/apiServices";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
 const CallPage = () => {
+    const [status, setStatus] = useState();
     const router = useRouter();
+  
+    useEffect(() => {
+      if (localStorage.getItem('userId') == null) {
+        router.push('/');
+      }
+    }, [router]);
 
     return (
         <div className="position-relative d-flex vh-100 flex-column bg-light overflow-hidden">
@@ -25,15 +35,40 @@ const CallPage = () => {
                                 placeholder="Wprowadź numer telefonu"
                                 className="form-control rounded-xl"
                                 style={{ backgroundColor: '#e7eef4', color: '#0d151c', height: '56px' }}
+                                id="phoneNumber"
+                                maxLength={9}
                                 />
                             </label>
                         </div>
 
                         <div className="d-flex px-3 py-2">
-                            <Button className="btn w-100 rounded-xl text-white fw-bold" style={{ backgroundColor: '#2094f3', height: '48px' }}>Zadzwoń</Button>
+                            <Button 
+                            className="btn w-100 rounded-xl text-white fw-bold" 
+                            style={{ backgroundColor: '#2094f3', height: '48px' }}
+                            onClick={() => {
+                                if(document.getElementById('phoneNumber').value.length == 9) {
+                                UpdateStatusAPI('ringing').then(function (response) {
+                                    setStatus('Dzwonienie');
+                                    if(response.status == 200) {
+                                        UpdateStatusAPI('offhook');
+                                        setStatus('W trakcie rozmowy');
+                                        localStorage.setItem('status', 'offhook');
+                                    }
+                                });;
+                                }
+                            }}
+                            >Zadzwoń</Button>
                         </div>
                         <div className="d-flex px-3 py-2">
-                            <Button className="btn w-100 rounded-xl text-dark fw-bold" style={{ backgroundColor: '#e7eef4', height: '48px', borderColor: '#e7eef4' }}>Rozłącz się</Button>
+                            <Button 
+                            className="btn w-100 rounded-xl text-dark fw-bold" 
+                            style={{ backgroundColor: '#e7eef4', height: '48px', borderColor: '#e7eef4' }}
+                            onClick={() => {
+                                UpdateStatusAPI('idle');
+                                setStatus('idle');
+                                localStorage.setItem('status', 'idle');
+                            }}
+                            >Rozłącz się</Button>
                         </div>
 
                         
@@ -47,7 +82,7 @@ const CallPage = () => {
                                 </svg>
                             </div>
                             <div className="d-flex flex-column justify-content-center">
-                                <p className="text-dark fw-medium mb-0">Status połączenia: Ringing</p>
+                                <p className="text-dark fw-medium mb-0">Status połączenia: {localStorage.getItem('status')}</p>
                                 <p className="text-muted small mb-1" style={{ color: '#49779c' }}>Przychodzące połączenie od 123-456-789</p>
                             </div>
                         </div>
@@ -56,6 +91,11 @@ const CallPage = () => {
                             <Button
                                 className="btn w-100 rounded-xl text-dark fw-bold"
                                 style={{ backgroundColor: 'transparent', fontSize: '0.875rem', borderColor: 'transparent' }}
+                                onClick={() => {
+                                    UpdateStatusAPI('idle');
+                                    setStatus('idle');
+                                    localStorage.setItem('status', 'idle');
+                                }}
                             >
                                 Przełącz na idle
                             </Button>
@@ -66,7 +106,7 @@ const CallPage = () => {
                             style={{ backgroundColor: 'red', fontSize: '0.875rem', borderColor: 'transparent' }} 
                             onClick={() => {
                                 logOutConsultant();
-                                router.refresh();
+                                window.location.reload(false);
                             }}
                             >
                                 Wyloguj się (Do zmiany)

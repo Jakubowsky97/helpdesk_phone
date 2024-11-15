@@ -1,27 +1,19 @@
 "use client";
-import 'bootstrap/dist/css/bootstrap.min.css';
-import '@/components/css/button.css'
 import React from 'react';
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
-import Button from 'react-bootstrap/Button';
-import PairingCodeModal from '../components/PairingCodeModal';
 import { getPairingCode, checkIfPaired, generateOAuthToken, getInfoAboutPhone } from '../api/apiServices';
-import LoginConsultant from '../components/LoginConsultant';
 import axios from 'axios';
-import { handleClearLocalStorage } from '@/components/ClearLocalStorage';
-import CallPage from '@/components/CallPage';
+import PairingCodePage from '../components/PairingCodePage';
 
 const helpDesk = () => {
   const router = useRouter();
-  const [modalShow, setModalShow] = useState(false);
   const [pairingCode, setPairingCode] = useState('');
   const [expiry_time, setExpiryTime] = useState('');
   const [abortController, setAbortController] = useState(null);
   const [userId, setUserId] = useState('');
 
   function handleGetPairingCode() {
-    if(modalShow == true) {
       getPairingCode()
       .then(function (response) {
         const code = response.data.code;
@@ -33,12 +25,10 @@ const helpDesk = () => {
         setAbortController(controller);
 
         handleCheckIfPaired(code, controller);
-        setModalShow(true); 
       })
       .catch(function (error) {
         console.log(error);
       });
-    }
   }
 
   function sleep(ms) {
@@ -75,18 +65,6 @@ const helpDesk = () => {
       });
   }
 
-  function handleModalHide() {
-    setModalShow(false);
-    setPairingCode('');
-    setExpiryTime('');
-    localStorage.removeItem('pairingCode');
-
-    if (abortController) {
-      abortController.abort();
-      setAbortController(null);
-    }
-  }
-
   function handleInfoAboutPhone() {
     getInfoAboutPhone().then(function (response) {
       setUserId(response.data.user_id);
@@ -100,44 +78,39 @@ const helpDesk = () => {
   useEffect(() => {
     const accessToken = localStorage.getItem('accessToken');
     if (accessToken) {
-      axios.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
       
       const fetchPhoneInfo = async () => {
         try {
           await handleInfoAboutPhone();
-          router.refresh();
+         console.log("Phone info fetched");
         } catch (error) {
           console.error("Error fetching phone info:", error);
         }
       };
 
       fetchPhoneInfo();
+    } else {
+      console.log("No access token");
     }
-  }, []);
+  }, [localStorage.getItem('accessToken')]);
+
+  useEffect(() => {
+    if (localStorage.getItem('accessToken') || localStorage.getItem('clientId')) {
+      axios.defaults.headers.common['Authorization'] = `Bearer ${localStorage.getItem('accessToken')}`;
+      router.push('/login');
+    }
+  }, [localStorage.getItem('accessToken'), localStorage.getItem('clientId'), router]);
   
   return (
     <div>
       {localStorage.getItem('accessToken') || localStorage.getItem('clientId') ? (
-        userId == 0 ? (
-          <LoginConsultant/>
-        ) : (
-          <CallPage/>
-        )
+          <div>Loading...</div>
       ) : (
-        <div>
-          <h1>Status: Rozłączony</h1>
-          <Button onClick={() => {
-            handleGetPairingCode();
-            setModalShow(true);
-          }}>Wyświetl kod</Button>
-          <PairingCodeModal
-            show={modalShow}
-            onHide={handleModalHide}
+          <PairingCodePage
             code={pairingCode}
             expiry_time={expiry_time}
             get_new_code={handleGetPairingCode}
           />
-        </div>
       )}
     </div>
   );

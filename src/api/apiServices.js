@@ -28,10 +28,19 @@ export const getInfoAboutPhone = () => {
 
 export const LoginConsultantAPI = () => { 
   return axios.post(base_url + '/api/v2/phone/user/login', {
-    "code": document.getElementById('loginCode').value
+    "code": document.getElementById('loginCode').value,
   })
 };
 
 export const LogOutConsultantAPI = () => { 
   return axios.post(base_url + '/api/v2/phone/user/logout');
 };
+
+export const UpdateStatusAPI = (status) => {
+  return axios.put(base_url + '/api/v2/phone/status', {
+    "phone_status": status,
+    "number": document.getElementById('phoneNumber').value || "0",
+    "appVersion": "2.0",
+    "androidVersion": "",
+  });
+}

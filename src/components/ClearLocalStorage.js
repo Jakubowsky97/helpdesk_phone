@@ -14,4 +14,5 @@ export const logOutConsultant = () => {
   });
   localStorage.removeItem('name');
   localStorage.removeItem('userId');
+  localStorage.removeItem('status');
 }
