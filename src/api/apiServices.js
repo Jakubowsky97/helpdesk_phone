@@ -42,5 +42,37 @@ export const UpdateStatusAPI = (status) => {
     "number": document.getElementById('phoneNumber').value || "0",
     "appVersion": "2.0",
     "androidVersion": "",
+  }).catch(function (error) {
+    console.error(error);
+    if(error.response.status == 401) {
+      axios.defaults.headers.common['Authorization'] = `Bearer ${localStorage.getItem('accessToken')}`;
+    }
+  });
+}
+
+export const SendHistoryAPI = (name, number, callType, date, duration) => {
+  return axios.post(base_url + '/api/v2/phone/call', {
+    "appVersion": "2.0",
+    "data": [
+      {
+      "cachedName": '',
+      "cachedNumberType": 0,
+      "contact": 0,
+      "date": date,
+      "duration": duration,
+      "name": name,
+      "number": number,
+      "phoneAccountId": "string",
+      "photo": "string",
+      "thumbPhoto": "string",
+      "type": callType,
+      "viaNumber": "string"
+      }
+    ]
+  }).catch(function (error) {
+    console.error(error);
+    if(error.response.status == 401) {
+      axios.defaults.headers.common['Authorization'] = `Bearer ${localStorage.getItem('accessToken')}`;
+    }
   });
 }

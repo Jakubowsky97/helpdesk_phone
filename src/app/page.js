@@ -71,7 +71,10 @@ const helpDesk = () => {
       localStorage.setItem('userId', response.data.user_id);
       router.refresh();
     }).catch(function (error) {
-      console.error(error);
+      if(error.response.status == 401) {
+        axios.defaults.headers.common['Authorization'] = `Bearer ${localStorage.getItem('accessToken')}`;
+        router.push('/login');
+      }
     })
   }
 
@@ -97,9 +100,9 @@ const helpDesk = () => {
   useEffect(() => {
     if (localStorage.getItem('accessToken') || localStorage.getItem('clientId')) {
       axios.defaults.headers.common['Authorization'] = `Bearer ${localStorage.getItem('accessToken')}`;
-      router.push('/login');
+      router.refresh();
     }
-  }, [localStorage.getItem('accessToken'), localStorage.getItem('clientId'), router]);
+  }, [localStorage.getItem('accessToken'), localStorage.getItem('clientId'), router ]);
   
   return (
     <div>

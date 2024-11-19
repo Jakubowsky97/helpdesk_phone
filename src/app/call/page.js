@@ -4,6 +4,7 @@ import { logOutConsultant } from "@/components/ClearLocalStorage";
 import { UpdateStatusAPI } from "@/api/apiServices";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Header from "@/components/Header";
 
 const CallPage = () => {
     const [status, setStatus] = useState();
@@ -17,13 +18,14 @@ const CallPage = () => {
 
     return (
         <div className="position-relative d-flex vh-100 flex-column bg-light overflow-hidden">
-            <div className="container-fluid d-flex flex-column h-100">
+            <div className="container-fluid d-flex flex-column h-100 px-0">
+            <Header />
                 <div className="px-5 d-flex flex-grow-1 justify-content-center py-3">
                     <div className="container d-flex flex-column" style={{ maxWidth: '960px'}}>
 
                         <div className="d-flex flex-wrap justify-content-between gap-3 p-4">
                             <div className="d-flex flex-column gap-2" style={{ minWidth: '18rem' }}>
-                                <p className="text-dark fs-2 fw-bold mb-0" style={{ color: '#0d151c' }}>Phone Call Simulator</p>
+                                <p className="text-dark fs-2 fw-bold mb-0" style={{ color: '#0d151c' }}>Symulator telefonu</p>
                                 <p className="text-muted mb-0" style={{ color: '#49779c' }}>Testuj przychodzące i wychodzące połączenia</p>
                             </div>
                         </div>
@@ -109,7 +111,7 @@ const CallPage = () => {
                                 window.location.reload(false);
                             }}
                             >
-                                Wyloguj się (Do zmiany)
+                                Wyloguj się
                             </Button>
                         </div>
                     </div>

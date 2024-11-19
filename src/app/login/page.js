@@ -61,7 +61,10 @@ export default function LoginConsultant() {
                     window.location.reload(false);
                     isSubmitted = true;
                   }).catch(function (error) {
-                    console.error(error);
+                    if(error.response.status == 401) {
+                      axios.defaults.headers.common['Authorization'] = `Bearer ${localStorage.getItem('accessToken')}`;
+                      router.push('/login');
+                    }
                   });
                 }}
               >
